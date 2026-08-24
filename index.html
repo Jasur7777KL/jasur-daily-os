@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jasur — Daily OS</title>
+<meta name="description" content="Personal daily planner and habit tracker">
+<style>
+:root{
+  --bg:#f5f7fb; --surface:#ffffff; --surface2:#f8fafc; --text:#111827; --muted:#64748b;
+  --line:#e5e7eb; --primary:#4f46e5; --primary2:#7c3aed; --good:#16a34a; --warn:#d97706;
+  --danger:#dc2626; --shadow:0 10px 35px rgba(15,23,42,.07); --radius:20px;
+}
+[data-theme="dark"]{
+  --bg:#0b1020; --surface:#121a2b; --surface2:#182236; --text:#f8fafc; --muted:#94a3b8;
+  --line:#26334d; --primary:#818cf8; --primary2:#a78bfa; --good:#4ade80; --warn:#fbbf24;
+  --danger:#f87171; --shadow:0 16px 45px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button{font:inherit;border:0;cursor:pointer;color:inherit}
+.app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+.sidebar{padding:24px 16px;border-right:1px solid var(--line);background:var(--surface);position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 8px 28px;font-weight:800;font-size:19px}
+.logo{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:white;background:linear-gradient(135deg,var(--primary),var(--primary2));box-shadow:0 8px 20px rgba(79,70,229,.25)}
+.nav{display:grid;gap:6px}.nav button{background:transparent;text-align:left;padding:12px 14px;border-radius:12px;color:var(--muted);font-weight:650}.nav button.active,.nav button:hover{background:var(--surface2);color:var(--text)}
+.quote{position:absolute;left:16px;right:16px;bottom:20px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface2);font-size:12px;line-height:1.5;color:var(--muted)}
+.main{padding:28px;max-width:1500px;width:100%;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:26px}
+.eyebrow{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}.title{font-size:30px;letter-spacing:-.03em;margin:5px 0 0}
+.actions{display:flex;gap:9px}.iconbtn{width:42px;height:42px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center}
+.grid{display:grid;grid-template-columns:1.45fr .85fr;gap:20px}.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero{padding:24px;display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}
+.hero h2{margin:4px 0 5px;font-size:24px}.hero p{margin:0;color:var(--muted)}
+.progressRing{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--primary) var(--progress),var(--line) 0);position:relative}
+.progressRing:after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--surface)}.progressRing span{position:relative;z-index:1;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}.stat{padding:18px}.stat .num{font-size:25px;font-weight:800}.stat .label{font-size:12px;color:var(--muted);margin-top:3px}
+.timeline{padding:20px}.sectionHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.sectionHead h3{margin:0;font-size:16px}.sectionHead span{font-size:12px;color:var(--muted)}
+.task{display:grid;grid-template-columns:62px 1fr auto;gap:13px;align-items:center;padding:14px 8px;border-top:1px solid var(--line)}
+.task:first-of-type{border-top:0}.time{font-variant-numeric:tabular-nums;font-weight:750;color:var(--muted);font-size:13px}
+.taskmain{min-width:0}.taskname{font-weight:700}.meta{display:flex;align-items:center;gap:7px;margin-top:5px;font-size:11px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--primary)}.task.current{background:var(--surface2);border-radius:14px;margin:3px 0;border:1px solid var(--line)}.task.done .taskname{text-decoration:line-through;color:var(--muted)}
+.check{width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}.done .check{background:var(--good);border-color:var(--good);color:white}
+.side{display:grid;gap:20px;align-content:start}.sidecard{padding:20px}.sidecard h3{margin:0 0 16px;font-size:16px}
+.category{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.category:last-child{border-bottom:0}.catleft{display:flex;align-items:center;gap:9px}.catdot{width:9px;height:9px;border-radius:50%}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.day{text-align:center}.daylabel{font-size:10px;color:var(--muted);margin-bottom:6px}.bar{height:45px;border-radius:10px;background:var(--surface2);border:1px solid var(--line);position:relative;overflow:hidden}.bar i{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,var(--primary),var(--primary2));height:var(--h)}
+.day.today .bar{outline:2px solid var(--primary);outline-offset:2px}
+.notice{padding:13px 15px;border-radius:13px;background:var(--surface2);color:var(--muted);font-size:12px;line-height:1.5;margin-top:14px}
+@media(max-width:1050px){.app{grid-template-columns:78px 1fr}.sidebar{padding:18px 10px}.brand span,.nav button span,.quote{display:none}.nav button{text-align:center}.main{padding:20px}.grid{grid-template-columns:1fr}}
+@media(max-width:650px){.app{display:block}.sidebar{height:auto;position:static;border-right:0;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.brand{padding:0}.nav{display:flex}.nav button{padding:9px}.main{padding:15px}.top{align-items:flex-start}.title{font-size:24px}.hero{padding:18px}.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}.task{grid-template-columns:52px 1fr auto}.week{gap:3px}}
+
+.task.current{border:1px solid color-mix(in srgb,var(--primary) 35%,var(--line));box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 9%,transparent)}
+.task.current .check{background:var(--primary);color:white;border-color:var(--primary)}
+.task.missed:not(.done) .taskname{color:var(--danger)}
+.task.missed:not(.done) .dot{background:var(--danger)!important}
+.task.upcoming{opacity:.88}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div>
+      <div class="brand"><div class="logo">J</div><span>Jasur OS</span></div>
+      <nav class="nav">
+        <button class="active">◉ <span>Today</span></button>
+        <button>▦ <span>Habits</span></button>
+        <button>◷ <span>Statistics</span></button>
+      </nav>
+    </div>
+    <div class="quote">“I am a man of my word. I do what I say.”<br><br>Small actions. Consistent days.</div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <div><div class="eyebrow" id="weekday"></div><div class="title">Good morning, Jasur 👋</div></div>
+      <div class="actions"><button class="iconbtn" id="themeBtn" title="Toggle theme">☾</button></div>
+    </div>
+
+    <section class="hero card">
+      <div>
+        <div class="eyebrow">Today's focus · <span id="clockText">--:--:--</span></div>
+        <h2 id="currentName">Loading...</h2>
+        <p id="currentMeta">—</p>
+      </div>
+      <div class="progressRing" id="ring"><span id="progressText">0%</span></div>
+    </section>
+
+    <div class="grid">
+      <section>
+        <div class="stats">
+          <div class="stat card"><div class="num" id="completed">0/0</div><div class="label">Completed today</div></div>
+          <div class="stat card"><div class="num" id="streak">0 🔥</div><div class="label">Day streak</div></div>
+          <div class="stat card"><div class="num" id="study">0h</div><div class="label">Study planned</div></div>
+        </div>
+
+        <div class="timeline card">
+          <div class="sectionHead"><h3>Today's timeline</h3><span id="dateText"></span></div>
+          <div id="tasks"></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <div class="sidecard card">
+          <h3>Weekly consistency</h3>
+          <div class="week" id="week"></div>
+          <div class="notice">Your progress is saved on this device. We can connect Supabase later for login, cloud sync and multi-device access.</div>
+        </div>
+        <div class="sidecard card">
+          <h3>Categories</h3>
+          <div id="categories"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script>
+const schedules = {
+  weekday: [
+    ["05:00","Wake up and Drink water","Health"],["05:10","Make Wudu","Faith"],["05:40","Fajr prayer","Faith"],
+    ["06:00","Exercise","Health"],["06:30","English / IELTS Study","Study"],["07:00","Short break","Break"],
+    ["07:15","Breakfast","Health"],["07:30","Have a shower","Health"],["07:50","Taxi → work","Work"],
+    ["08:20","Geography + Math","Study"],["09:00","Deep work","Work"],["12:00","IT","Study"],
+    ["13:00","Exercise","Faith"],["13:10","Lunch + German","Study"],["14:00","Deep work","Work"],
+    ["17:00","IT","Study"],["18:00","Taxi → home","Home"],["18:40","Family","Health"],
+    ["19:00","Dinner","Health"],["19:30","Diary","Study"],["19:50","Teach my brother","Study"],
+    ["20:30","Law + History","Study"],["21:10","English book","Study"],["21:50","Family","Family"],["22:00","Sleep","Health"]
+  ],
+  sunday: [
+    ["05:00","Wake up and Drink water","Health"],["05:10","Make Wudu","Faith"],["05:40","Fajr prayer","Faith"],
+    ["06:00","Exercise","Health"],["06:30","English / IELTS Study","Study"],["07:00","Short break","Break"],
+    ["07:15","Breakfast","Health"],["07:30","Have a shower","Health"],["07:50","Family","Family"],
+    ["08:50","Short break","Break"],["09:00","IT","Study"],["11:00","Family","Family"],
+    ["11:30","German","Study"],["12:30","Lunch + Nap","Health"],["15:30","Family","Family"],
+    ["16:00","Exercise","Health"],["16:30","IT","Study"],["18:30","Family","Family"],
+    ["19:00","Dinner","Health"],["19:30","Diary","Study"],["19:50","Teach my brother","Study"],
+    ["20:30","Law + History","Study"],["21:10","English book","Study"],["21:50","Family","Family"],["22:00","Sleep","Health"]
+  ]
+};
+const categoryColors={Health:"#22c55e",Faith:"#8b5cf6",Study:"#3b82f6",Break:"#94a3b8",Work:"#f59e0b",Home:"#06b6d4",Family:"#ec4899"};
+
+const now = new Date();
+const isSunday = now.getDay() === 0;
+const schedule = isSunday ? schedules.sunday : schedules.weekday;
+const key = now.toISOString().slice(0,10);
+let completed = JSON.parse(localStorage.getItem("jasur-completed-"+key)||"[]");
+
+function mins(t){const [h,m]=t.split(":").map(Number);return h*60+m}
+function nowMins(){return new Date().getHours()*60+new Date().getMinutes()}
+function timeText(m){
+  const h=Math.floor(m/60), mm=String(m%60).padStart(2,"0");
+  return `${String(h).padStart(2,"0")}:${mm}`;
+}
+function currentIndex(){
+  const n=nowMins();
+  let idx=-1;
+  for(let i=0;i<schedule.length;i++) if(n>=mins(schedule[i][0])) idx=i;
+  return Math.max(0,idx);
+}
+function taskState(i){
+  if(completed.includes(i)) return "done";
+  const n=nowMins();
+  const start=mins(schedule[i][0]);
+  const end=i<schedule.length-1?mins(schedule[i+1][0]):start+30;
+  if(n>=start && n<end) return "current";
+  if(n>=end) return "missed";
+  return "upcoming";
+}
+function stateLabel(state){
+  return {done:"Completed",current:"NOW",missed:"Missed",upcoming:"Upcoming"}[state];
+}
+function render(){
+  const idx=currentIndex(), current=schedule[idx]||schedule[0];
+  const currentState=taskState(idx);
+  document.getElementById("currentName").textContent=current[1];
+  document.getElementById("currentMeta").textContent=`${current[0]} · ${current[2]} · ${stateLabel(currentState)}`;
+  document.getElementById("weekday").textContent=new Date().toLocaleDateString("en-US",{weekday:"long"});
+  document.getElementById("dateText").textContent=new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+  document.getElementById("clockText").textContent=new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const tasks=document.getElementById("tasks"); tasks.innerHTML="";
+  schedule.forEach((t,i)=>{
+    const state=taskState(i), done=state==="done";
+    const end=i<schedule.length-1?schedule[i+1][0]:"22:30";
+    const el=document.createElement("div");
+    el.className=`task ${state} ${done?"done":""}`;
+    let extra="";
+    if(state==="current"){
+      const late=Math.max(0,nowMins()-mins(t[0]));
+      extra=late>0?` · Late ${late} min`:" · On time";
+    } else if(state==="missed") extra=" · Not completed";
+    el.innerHTML=`<div class="time">${t[0]}</div>
+      <div class="taskmain"><div class="taskname">${t[1]}</div>
+      <div class="meta"><i class="dot" style="background:${categoryColors[t[2]]||"var(--primary)"}"></i>${t[2]} · ${stateLabel(state)}${extra}</div></div>
+      <button class="check" onclick="toggleTask(${i})">${done?"✓":state==="current"?"●":"○"}</button>`;
+    tasks.appendChild(el);
+  });
+
+  const pct=Math.round(completed.length/schedule.length*100);
+  document.getElementById("progressText").textContent=pct+"%";
+  document.getElementById("ring").style.setProperty("--progress",pct+"%");
+  document.getElementById("completed").textContent=`${completed.length}/${schedule.length}`;
+  document.getElementById("study").textContent=schedule.filter(x=>x[2]==="Study").length+" tasks";
+  renderCategories(); renderWeek();
+}
+function toggleTask(i){
+  completed=completed.includes(i)?completed.filter(x=>x!==i):[...completed,i];
+  localStorage.setItem("jasur-completed-"+key,JSON.stringify(completed));
+  render();
+}
+function renderCategories(){
+  const counts={};
+  schedule.forEach((x,i)=>{counts[x[2]]??={total:0,done:0};counts[x[2]].total++;if(completed.includes(i))counts[x[2]].done++});
+  document.getElementById("categories").innerHTML=Object.entries(counts).map(([c,v])=>`<div class="category"><div class="catleft"><i class="catdot" style="background:${categoryColors[c]||"var(--primary)"}"></i><span>${c}</span></div><strong>${v.done}/${v.total}</strong></div>`).join("");
+}
+function dayKey(d){return d.toISOString().slice(0,10)}
+function renderWeek(){
+  const el=document.getElementById("week");el.innerHTML="";
+  const labels=["S","M","T","W","T","F","S"];
+  const base=new Date();base.setHours(0,0,0,0);base.setDate(base.getDate()-base.getDay());
+  for(let d=0;d<7;d++){
+    const date=new Date(base);date.setDate(base.getDate()+d);
+    const k=dayKey(date), sc=date.getDay()===0?schedules.sunday:schedules.weekday;
+    const arr=JSON.parse(localStorage.getItem("jasur-completed-"+k)||"[]");
+    const p=Math.round(arr.length/sc.length*100);
+    el.innerHTML+=`<div class="day ${k===key?"today":""}"><div class="daylabel">${labels[d]}</div><div class="bar" title="${p}%"><i style="--h:${p}%"></i></div></div>`;
+  }
+}
+document.getElementById("themeBtn").onclick=()=>{
+  const root=document.documentElement,dark=root.getAttribute("data-theme")==="dark";
+  root.setAttribute("data-theme",dark?"light":"dark");
+  localStorage.setItem("jasur-theme",dark?"light":"dark");
+  document.getElementById("themeBtn").textContent=dark?"☾":"☀";
+};
+const saved=localStorage.getItem("jasur-theme")||"light";
+document.documentElement.setAttribute("data-theme",saved);
+document.getElementById("themeBtn").textContent=saved==="dark"?"☀":"☾";
+setInterval(render,1000);
+render();
+</script>
+</body>
+</html>
